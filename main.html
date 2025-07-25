@@ -327,6 +327,64 @@
       flex-wrap: wrap;
     }
 
+    /* Thursday Special Layout */
+    .thursday-layout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      width: 100%;
+    }
+
+    .thursday-branches {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 50px;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .thursday-branch {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      min-width: 280px;
+    }
+
+    .thursday-wait-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+    }
+
+    .corner-diamond {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      border: 3px solid #d97706;
+      transform: rotate(45deg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .corner-diamond-content {
+      transform: rotate(-45deg);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-align: center;
+      color: #92400e;
+      padding: 10px;
+      line-height: 1.2;
+    }
+
     .error {
       color: #dc2626;
       font-size: 0.9rem;
@@ -455,6 +513,21 @@
         font-size: 0.9rem;
         min-width: 80px;
       }
+
+      .thursday-branches {
+        flex-direction: column;
+        gap: 30px;
+      }
+
+      .corner-diamond {
+        width: 100px;
+        height: 100px;
+      }
+
+      .corner-diamond-content {
+        font-size: 0.75rem;
+        padding: 8px;
+      }
     }
   </style>
 </head>
@@ -548,11 +621,54 @@
         </div>
       </div>
 
-      <!-- Thursday: Buy Action -->
-      <div class="result buy hidden" id="buyAction">
-        💰 CONSIDER TO BUY
-        <div style="font-size: 1rem; margin-top: 10px; font-weight: 400;">
-          Buy for $10k only
+      <!-- Thursday: Position Check -->
+      <div class="diamond hidden" id="thursdayPositionCheck">
+        <div class="diamond-content">Do you have any positions?</div>
+        <div class="decision-buttons">
+          <button class="btn btn-yes" onclick="answer('thursdayPositionCheck', 'yes')">Yes</button>
+          <button class="btn btn-no" onclick="answer('thursdayPositionCheck', 'no')">No</button>
+        </div>
+      </div>
+
+      <!-- Thursday Layout -->
+      <div class="thursday-layout hidden" id="thursdayLayout">
+        <div class="thursday-branches">
+          <!-- Left Branch: Has Positions -->
+          <div class="thursday-branch hidden" id="thursdayLeftBranch">
+            <div class="arrow-horizontal">←</div>
+            <div class="result sell" style="min-width: 280px;">
+              📤 CONSIDER TO SELL
+              <div style="font-size: 0.9rem; margin-top: 8px; font-weight: 400;">
+                If market is UP
+              </div>
+            </div>
+            <div style="margin: 10px 0; font-weight: 600; color: #2563eb;">AND</div>
+            <div class="result buy" style="min-width: 280px;">
+              💰 BUY AFTER 9:30 AM
+              <div style="font-size: 0.9rem; margin-top: 8px; font-weight: 400;">
+                Additional positions
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Branch: No Positions -->
+          <div class="thursday-branch hidden" id="thursdayRightBranch">
+            <div class="arrow-horizontal">→</div>
+            <div class="result buy" style="min-width: 280px;">
+              💰 CONSIDER TO BUY
+              <div style="font-size: 0.9rem; margin-top: 8px; font-weight: 400;">
+                If market is DOWN<br>Start with $10k and keep buying
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center Wait Option -->
+        <div class="corner-diamond hidden" id="thursdayWaitCenter" style="margin-top: 30px;">
+          <div class="corner-diamond-content">
+            WAIT & SEE<br>
+            <span style="font-size: 0.75rem;">If not certain<br>Wait until 9:30 AM</span>
+          </div>
         </div>
       </div>
 
@@ -694,8 +810,10 @@
         updateBackButton();
         
       } else if (selectedDay === 'Thursday') {
-        showElement('buyAction');
-        stepHistory.push('buyAction');
+        showElement('thursdayPositionCheck');
+        stepHistory.push('thursdayPositionCheck');
+        currentStep = 2;
+        updateBackButton();
         
       } else if (selectedDay === 'Friday') {
         showElement('waitAction');
@@ -746,6 +864,22 @@
           currentStep = 4;
           updateBackButton();
         }
+      }
+      else if (questionId === 'thursdayPositionCheck') {
+        showElement('thursdayLayout');
+        if (response === 'yes') {
+          setTimeout(() => {
+            showElement('thursdayLeftBranch');
+          }, 300);
+        } else {
+          setTimeout(() => {
+            showElement('thursdayRightBranch');
+          }, 300);
+        }
+        setTimeout(() => {
+          showElement('thursdayWaitCenter');
+        }, 600);
+        stepHistory.push('thursdayLayout');
       }
     }
 
@@ -850,7 +984,7 @@
     }
 
     function hideAllElements() {
-      const elements = document.querySelectorAll('.arrow, .diamond, .result, .input-group, .horizontal-flow, .time-input');
+      const elements = document.querySelectorAll('.arrow, .diamond, .result, .input-group, .horizontal-flow, .time-input, .thursday-layout, .thursday-branch, .corner-diamond');
       elements.forEach(el => {
         el.classList.add('hidden');
         el.classList.remove('visible');
@@ -891,6 +1025,12 @@
           currentStep = 2;
           
         } else if (currentStep === 2) {
+          // Back to start
+          resetFlowchart();
+          return;
+        }
+      } else if (selectedDay === 'Thursday') {
+        if (currentStep === 2) {
           // Back to start
           resetFlowchart();
           return;
