@@ -477,18 +477,7 @@
     <div class="current-day" id="currentDay" aria-live="polite">Select a Day to Start</div>
 
     <div class="flowchart" role="region" aria-label="Trading Flowchart">
-      <!-- Start -->
-      <div class="node start visible" id="start">📈 Ready to Trade</div>
       
-      <div class="arrow hidden" id="arrow1">↓</div>
-
-      <!-- Day Check (Hidden - Logic Only) -->
-      <div class="diamond hidden" id="dayCheck">
-        <div class="diamond-content">Processing Day...</div>
-      </div>
-
-      <div class="arrow hidden" id="arrow2">↓</div>
-
       <!-- Monday/Wednesday: Sell Action -->
       <div class="result sell hidden" id="sellAction">
         📤 CONSIDER TO SELL
@@ -497,7 +486,69 @@
         </div>
       </div>
 
-      <!-- Tuesday/Thursday: Buy Action -->
+      <!-- Tuesday Market Direction Check -->
+      <div class="diamond hidden" id="tuesdayMarketCheck">
+        <div class="diamond-content">Is the market going up?</div>
+        <div class="decision-buttons">
+          <button class="btn btn-yes" onclick="answer('tuesdayMarketCheck', 'up')">Up</button>
+          <button class="btn btn-no" onclick="answer('tuesdayMarketCheck', 'down')">Down</button>
+        </div>
+      </div>
+
+      <!-- Tuesday - Market Up: Sell -->
+      <div class="result sell hidden" id="tuesdaySell">
+        📤 SELL $10K WHEN STOCK GOES UP 1%
+        <div style="font-size: 1rem; margin-top: 10px; font-weight: 400;">
+          Market is up - Sell $10k every time stock goes up 1%
+        </div>
+      </div>
+
+      <!-- Tuesday - Market Down: Position Check -->
+      <div class="diamond hidden" id="tuesdayPositionCheck">
+        <div class="diamond-content">Do you have stock position?</div>
+        <div class="decision-buttons">
+          <button class="btn btn-yes" onclick="answer('tuesdayPositionCheck', 'yes')">Yes</button>
+          <button class="btn btn-no" onclick="answer('tuesdayPositionCheck', 'no')">No</button>
+        </div>
+      </div>
+
+      <!-- Tuesday - Has Position: Buy -->
+      <div class="result buy hidden" id="tuesdayBuy">
+        💰 CONSIDER TO BUY $10K
+        <div style="font-size: 1rem; margin-top: 10px; font-weight: 400;">
+          Market is down - Buy $10k worth of stocks
+        </div>
+      </div>
+
+      <!-- Tuesday - No Position: Time Check -->
+      <div class="time-input hidden" id="tuesdayTimeCheck">
+        <label for="tuesdayTime" style="font-weight: 600; color: #92400e; margin-bottom: 15px; display: block;">
+          What time is it now?
+        </label>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+          <input type="time" id="tuesdayTime"/>
+          <button class="btn btn-yes" onclick="checkTuesdayTime()">Check</button>
+        </div>
+        <div id="tuesday-time-error" class="error hidden">Please select the current time</div>
+      </div>
+
+      <!-- Tuesday - Before 9:30 AM: Wait -->
+      <div class="result wait hidden" id="tuesdayWaitEarly">
+        ⏳ WAIT UNTIL 9:30 AM
+        <div style="font-size: 1rem; margin-top: 10px; font-weight: 400;">
+          Too early - Wait until 9:30 AM before buying
+        </div>
+      </div>
+
+      <!-- Tuesday - After 9:30 AM: Buy -->
+      <div class="result buy hidden" id="tuesdayBuyAfter930">
+        💰 CONSIDER TO BUY $10K
+        <div style="font-size: 1rem; margin-top: 10px; font-weight: 400;">
+          After 9:30 AM - You can buy $10k worth of stocks
+        </div>
+      </div>
+
+      <!-- Thursday: Buy Action -->
       <div class="result buy hidden" id="buyAction">
         💰 CONSIDER TO BUY
         <div style="font-size: 1rem; margin-top: 10px; font-weight: 400;">
@@ -612,46 +663,44 @@
       
       // Reset step tracking
       currentStep = 1;
-      stepHistory = ['start'];
+      stepHistory = [day];
       
-      // Start the flow
-      showElement('arrow1');
-      setTimeout(() => {
-        showElement('dayCheck');
-        processDay();
-      }, 600);
+      // Start the appropriate flow immediately
+      processDay();
+      updateBackButton();
     }
 
     function processDay() {
-      stepHistory.push('dayCheck');
+      // Clear any existing content first
+      hideAllElements();
       
-      setTimeout(() => {
-        showElement('arrow2');
-        
+      if (selectedDay === 'Monday' || selectedDay === 'Wednesday') {
+        showElement('sellAction');
+        stepHistory.push('sellAction');
         setTimeout(() => {
-          if (selectedDay === 'Monday' || selectedDay === 'Wednesday') {
-            showElement('sellAction');
-            stepHistory.push('sellAction');
-            setTimeout(() => {
-              showElement('arrow3');
-              setTimeout(() => {
-                showElement('profitCheck');
-                stepHistory.push('profitCheck');
-                currentStep = 2;
-                updateBackButton();
-              }, 500);
-            }, 800);
-            
-          } else if (selectedDay === 'Tuesday' || selectedDay === 'Thursday') {
-            showElement('buyAction');
-            stepHistory.push('buyAction');
-            
-          } else if (selectedDay === 'Friday') {
-            showElement('waitAction');
-            stepHistory.push('waitAction');
-          }
-        }, 600);
-      }, 600);
+          showElement('arrow3');
+          setTimeout(() => {
+            showElement('profitCheck');
+            stepHistory.push('profitCheck');
+            currentStep = 2;
+            updateBackButton();
+          }, 500);
+        }, 800);
+        
+      } else if (selectedDay === 'Tuesday') {
+        showElement('tuesdayMarketCheck');
+        stepHistory.push('tuesdayMarketCheck');
+        currentStep = 2;
+        updateBackButton();
+        
+      } else if (selectedDay === 'Thursday') {
+        showElement('buyAction');
+        stepHistory.push('buyAction');
+        
+      } else if (selectedDay === 'Friday') {
+        showElement('waitAction');
+        stepHistory.push('waitAction');
+      }
     }
 
     function answer(questionId, response) {
@@ -669,12 +718,33 @@
             stepHistory.push('amountInput');
             currentStep = 3;
             updateBackButton();
-            // Focus on input
             document.getElementById('profitAmount').focus();
           }, 600);
         } else {
           showElement('limitTrade');
           stepHistory.push('limitTrade');
+        }
+      } 
+      else if (questionId === 'tuesdayMarketCheck') {
+        if (response === 'up') {
+          showElement('tuesdaySell');
+          stepHistory.push('tuesdaySell');
+        } else {
+          showElement('tuesdayPositionCheck');
+          stepHistory.push('tuesdayPositionCheck');
+          currentStep = 3;
+          updateBackButton();
+        }
+      }
+      else if (questionId === 'tuesdayPositionCheck') {
+        if (response === 'yes') {
+          showElement('tuesdayBuy');
+          stepHistory.push('tuesdayBuy');
+        } else {
+          showElement('tuesdayTimeCheck');
+          stepHistory.push('tuesdayTimeCheck');
+          currentStep = 4;
+          updateBackButton();
         }
       }
     }
@@ -737,6 +807,32 @@
       }, 400);
     }
 
+    function checkTuesdayTime() {
+      const timeInput = document.getElementById('tuesdayTime');
+      const time = timeInput.value;
+      const errorDiv = document.getElementById('tuesday-time-error');
+
+      if (!time) {
+        errorDiv.classList.remove('hidden');
+        timeInput.focus();
+        return;
+      }
+
+      errorDiv.classList.add('hidden');
+
+      const [hours, minutes] = time.split(':').map(Number);
+      const currentTime = hours + (minutes / 60);
+
+      setTimeout(() => {
+        if (currentTime < 9.5) { // Before 9:30 AM
+          showElement('tuesdayWaitEarly');
+        } else {
+          showElement('tuesdayBuyAfter930');
+        }
+        stepHistory.push('tuesdayTimeResult');
+      }, 400);
+    }
+
     function showElement(elementId) {
       const element = document.getElementById(elementId);
       if (element) {
@@ -753,6 +849,14 @@
       }
     }
 
+    function hideAllElements() {
+      const elements = document.querySelectorAll('.arrow, .diamond, .result, .input-group, .horizontal-flow, .time-input');
+      elements.forEach(el => {
+        el.classList.add('hidden');
+        el.classList.remove('visible');
+      });
+    }
+
     function updateBackButton() {
       const backBtn = document.getElementById('backBtn');
       backBtn.classList.toggle('hidden', currentStep <= 1);
@@ -761,35 +865,68 @@
     function goBack() {
       if (currentStep <= 1) return;
 
-      // Hide current step elements and go back
-      if (currentStep === 4) {
-        // From time check back to amount input
-        hideElement('under5kFlow');
-        hideElement('stopTrading');
-        hideElement('continueTrading');
-        document.getElementById('currentTime').value = '';
-        document.getElementById('time-error').classList.add('hidden');
-        currentStep = 3;
-        
-      } else if (currentStep === 3) {
-        // From amount input back to profit question
-        hideElement('amountInput');
-        hideElement('arrow4');
-        hideElement('arrow5');
-        hideElement('amountCheck');
-        hideElement('over5kFlow');
-        hideElement('under5kFlow');
-        document.getElementById('profitAmount').value = '';
-        document.getElementById('profit-error').classList.add('hidden');
-        
-        // Show profit check buttons again
-        const buttons = document.querySelector('#profitCheck .decision-buttons');
-        if (buttons) buttons.style.display = 'flex';
-        currentStep = 2;
-        
-      } else if (currentStep === 2) {
-        // Back to start
-        resetFlowchart();
+      if (selectedDay === 'Tuesday') {
+        if (currentStep === 4) {
+          // From time check back to position check
+          hideElement('tuesdayTimeCheck');
+          hideElement('tuesdayWaitEarly');
+          hideElement('tuesdayBuyAfter930');
+          document.getElementById('tuesdayTime').value = '';
+          document.getElementById('tuesday-time-error').classList.add('hidden');
+          
+          // Show position check buttons again
+          const buttons = document.querySelector('#tuesdayPositionCheck .decision-buttons');
+          if (buttons) buttons.style.display = 'flex';
+          currentStep = 3;
+          
+        } else if (currentStep === 3) {
+          // From position check back to market check
+          hideElement('tuesdayPositionCheck');
+          hideElement('tuesdayBuy');
+          hideElement('tuesdayTimeCheck');
+          
+          // Show market check buttons again
+          const buttons = document.querySelector('#tuesdayMarketCheck .decision-buttons');
+          if (buttons) buttons.style.display = 'flex';
+          currentStep = 2;
+          
+        } else if (currentStep === 2) {
+          // Back to start
+          resetFlowchart();
+          return;
+        }
+      } else {
+        // Handle other days
+        if (currentStep === 4) {
+          // From time check back to amount input
+          hideElement('under5kFlow');
+          hideElement('stopTrading');
+          hideElement('continueTrading');
+          document.getElementById('currentTime').value = '';
+          document.getElementById('time-error').classList.add('hidden');
+          currentStep = 3;
+          
+        } else if (currentStep === 3) {
+          // From amount input back to profit question
+          hideElement('amountInput');
+          hideElement('arrow4');
+          hideElement('arrow5');
+          hideElement('amountCheck');
+          hideElement('over5kFlow');
+          hideElement('under5kFlow');
+          document.getElementById('profitAmount').value = '';
+          document.getElementById('profit-error').classList.add('hidden');
+          
+          // Show profit check buttons again
+          const buttons = document.querySelector('#profitCheck .decision-buttons');
+          if (buttons) buttons.style.display = 'flex';
+          currentStep = 2;
+          
+        } else if (currentStep === 2) {
+          // Back to start
+          resetFlowchart();
+          return;
+        }
       }
       
       updateBackButton();
@@ -800,18 +937,16 @@
       selectedDay = '';
       stepHistory = [];
       
-      // Hide all elements except start
-      const elements = document.querySelectorAll('.arrow, .diamond, .result, .input-group, .horizontal-flow, .time-input');
-      elements.forEach(el => {
-        el.classList.add('hidden');
-        el.classList.remove('visible');
-      });
+      // Hide all elements
+      hideAllElements();
       
       // Reset all inputs and errors
       document.getElementById('profitAmount').value = '';
       document.getElementById('currentTime').value = '';
+      document.getElementById('tuesdayTime').value = '';
       document.getElementById('profit-error').classList.add('hidden');
       document.getElementById('time-error').classList.add('hidden');
+      document.getElementById('tuesday-time-error').classList.add('hidden');
       
       // Reset decision buttons
       const allButtons = document.querySelectorAll('.decision-buttons');
@@ -822,10 +957,6 @@
       // Reset day selection
       document.getElementById('currentDay').textContent = 'Select a Day to Start';
       document.querySelectorAll('.day-btn').forEach(btn => btn.classList.remove('active'));
-      
-      // Show start node
-      document.getElementById('start').classList.remove('hidden');
-      document.getElementById('start').classList.add('visible');
       
       updateBackButton();
     }
@@ -854,6 +985,8 @@
           checkAmount();
         } else if (document.activeElement.id === 'currentTime') {
           checkTime();
+        } else if (document.activeElement.id === 'tuesdayTime') {
+          checkTuesdayTime();
         }
       } else if (e.key === 'Escape') {
         if (currentStep > 1) {
