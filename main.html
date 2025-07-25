@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Limit Your Trade, Max Your Profit</title>
   <style>
+    /* Same CSS as before, with minor tweaks for new elements */
     * {
       margin: 0;
       padding: 0;
@@ -149,14 +150,9 @@
       color: #991b1b;
     }
 
-    .result.enjoy {
+    .result.take-profit {
       background: #d1fae5;
       color: #065f46;
-    }
-
-    .result.stop {
-      background: #fee2e2;
-      color: #991b1b;
     }
 
     .input-group {
@@ -261,6 +257,12 @@
       background: #4338ca;
     }
 
+    .error {
+      color: #dc2626;
+      font-size: 0.8rem;
+      margin-top: 5px;
+    }
+
     @media (max-width: 600px) {
       .container {
         padding: 15px;
@@ -357,25 +359,16 @@
 
       <div class="horizontal-flow hidden" id="over5kFlow">
         <div class="arrow-horizontal">→</div>
-        <div class="result enjoy">
-          🎉 STOP TRADING & ENJOY LIVING!<br/><span style="font-weight: 400;">You've made good profit today!</span>
+        <div class="result take-profit">
+          🎉 STOP TRADING & TAKE PROFIT!<br/><span style="font-weight: 400;">You've made good profit today!</span>
         </div>
       </div>
 
       <div class="horizontal-flow hidden" id="under5kFlow">
         <div class="arrow-horizontal">→</div>
-        <div class="input-group">
-          <label for="currentTime" style="margin-bottom: 15px; font-weight: 600;">What time is it?</label>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <input type="time" id="currentTime" aria-describedby="time-error"/>
-            <button class="btn btn-yes" onclick="checkTime()">Check</button>
-          </div>
-          <div id="time-error" class="error hidden" role="alert">Please enter a valid time.</div>
+        <div class="result buy">
+          💰 CONSIDER TO BUY<br/><span style="font-weight: 400;">Buy for $10k only</span>
         </div>
-      </div>
-
-      <div class="result stop hidden" id="stopTrading">
-        🛑 STOP TRADING<br/><span style="font-weight: 400;">It's 2PM or later - Stop trading</span>
       </div>
 
       <div class="result sell hidden" id="limitTrade">
@@ -472,32 +465,11 @@
           } else {
             showElement('under5kFlow');
             history.push('under5kFlow');
-            currentStep = 3;
+            currentStep = 3; // Update step for back navigation
             updateBackButton();
           }
         }, 500);
       }, 300);
-    }
-
-    function checkTime() {
-      const timeInput = document.getElementById('currentTime');
-      const time = timeInput.value;
-      const error = document.getElementById('time-error');
-      if (!time) {
-        error.classList.remove('hidden');
-        return;
-      }
-      error.classList.add('hidden');
-
-      history.push('under5kFlow-time');
-      const hour = parseInt(time.split(':')[0]);
-      if (hour >= 14) {
-        showElement('stopTrading');
-        history.push('stopTrading');
-      } else {
-        showElement('limitTrade');
-        history.push('limitTrade');
-      }
     }
 
     function showElement(id) {
@@ -526,10 +498,11 @@
       const lastStep = history.pop();
       if (currentStep === 3) {
         hideElement('under5kFlow');
-        hideElement('stopTrading');
-        hideElement('limitTrading');
-        document.getElementById('currentTime').value = '';
-        document.getElementById('time-error').classList.add('hidden');
+        hideElement('over5kFlow');
+        hideElement('amountCheck');
+        hideElement('arrow5');
+        document.getElementById('profitAmount').value = '';
+        document.getElementById('profit-error').classList.add('hidden');
         currentStep = 2;
       } else if (currentStep === 2) {
         hideElement('amountInput');
@@ -568,9 +541,7 @@
       document.getElementById('start').classList.remove('hidden');
       document.getElementById('start').classList.add('visible');
       document.getElementById('profitAmount').value = '';
-      document.getElementById('currentTime').value = '';
       document.getElementById('profit-error').classList.add('hidden');
-      document.getElementById('time-error').classList.add('hidden');
       document.querySelector('#profitCheck .decision-buttons').style.display = 'flex';
       updateBackButton();
     }
