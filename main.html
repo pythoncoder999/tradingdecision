@@ -353,14 +353,6 @@
       min-width: 280px;
     }
 
-    .thursday-wait-center {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 10;
-    }
-
     .corner-diamond {
       width: 120px;
       height: 120px;
@@ -623,52 +615,100 @@
 
       <!-- Thursday: Position Check -->
       <div class="diamond hidden" id="thursdayPositionCheck">
-        <div class="diamond-content">Do you have any positions?</div>
+        <div class="diamond-content">Do you have ANY positions?</div>
         <div class="decision-buttons">
           <button class="btn btn-yes" onclick="answer('thursdayPositionCheck', 'yes')">Yes</button>
           <button class="btn btn-no" onclick="answer('thursdayPositionCheck', 'no')">No</button>
         </div>
       </div>
 
-      <!-- Thursday Layout -->
-      <div class="thursday-layout hidden" id="thursdayLayout">
-        <div class="thursday-branches">
-          <!-- Left Branch: Has Positions -->
-          <div class="thursday-branch hidden" id="thursdayLeftBranch">
-            <div class="arrow-horizontal">←</div>
-            <div class="result sell" style="min-width: 280px;">
-              📤 CONSIDER TO SELL
-              <div style="font-size: 0.9rem; margin-top: 8px; font-weight: 400;">
-                If market is UP
-              </div>
-            </div>
-            <div style="margin: 10px 0; font-weight: 600; color: #2563eb;">AND</div>
-            <div class="result buy" style="min-width: 280px;">
-              💰 BUY AFTER 9:30 AM
-              <div style="font-size: 0.9rem; margin-top: 8px; font-weight: 400;">
-                Additional positions
-              </div>
-            </div>
-          </div>
-
-          <!-- Right Branch: No Positions -->
-          <div class="thursday-branch hidden" id="thursdayRightBranch">
-            <div class="arrow-horizontal">→</div>
-            <div class="result buy" style="min-width: 280px;">
-              💰 CONSIDER TO BUY
-              <div style="font-size: 0.9rem; margin-top: 8px; font-weight: 400;">
-                If market is DOWN<br>Start with $10k and keep buying
-              </div>
-            </div>
-          </div>
+      <!-- Thursday - Has Position: Market Direction Check -->
+      <div class="diamond hidden" id="thursdayMarketCheckWithPos">
+        <div class="diamond-content">Is the market going up?</div>
+        <div class="decision-buttons">
+          <button class="btn btn-yes" onclick="answer('thursdayMarketCheckWithPos', 'up')">Up</button>
+          <button class="btn btn-no" onclick="answer('thursdayMarketCheckWithPos', 'down')">Down</button>
         </div>
+      </div>
 
-        <!-- Center Wait Option -->
-        <div class="corner-diamond hidden" id="thursdayWaitCenter" style="margin-top: 30px;">
-          <div class="corner-diamond-content">
-            WAIT & SEE<br>
-            <span style="font-size: 0.75rem;">If not certain<br>Wait until 9:30 AM</span>
-          </div>
+      <!-- Thursday - Has Position & Market Up: Sell -->
+      <div class="result sell hidden" id="thursdayHasPosMarketUp">
+        📤 CONSIDER TO SELL
+        <div style="font-size: 1rem; margin-top: 10px; font-weight: 400;">
+          You have positions and market is up - Consider selling
+        </div>
+      </div>
+
+      <!-- Thursday - Has Position & Market Down: Buy After 9:30 -->
+      <div class="time-input hidden" id="thursdayHasPosMarketDownTime">
+        <label for="thursdayHasPosTime" style="font-weight: 600; color: #92400e; margin-bottom: 15px; display: block;">
+          What time is it now?
+        </label>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+          <input type="time" id="thursdayHasPosTime"/>
+          <button class="btn btn-yes" onclick="checkThursdayHasPosTime()">Check</button>
+        </div>
+        <div id="thursday-haspos-time-error" class="error hidden">Please select the current time</div>
+      </div>
+
+      <!-- Thursday - Has Position, Market Down, Before 9:30: Wait -->
+      <div class="result wait hidden" id="thursdayHasPosWaitEarly">
+        ⏳ WAIT UNTIL 9:30 AM
+        <div style="font-size: 1rem; margin-top: 10px; font-weight: 400;">
+          Too early - Wait until 9:30 AM before buying
+        </div>
+      </div>
+
+      <!-- Thursday - Has Position, Market Down, After 9:30: Buy -->
+      <div class="result buy hidden" id="thursdayHasPosBuyAfter930">
+        💰 BUY AFTER 9:30 AM
+        <div style="font-size: 1rem; margin-top: 10px; font-weight: 400;">
+          Market is down and it's after 9:30 AM - Consider buying
+        </div>
+      </div>
+
+      <!-- Thursday - No Position: Market Direction Check -->
+      <div class="diamond hidden" id="thursdayMarketCheckNoPos">
+        <div class="diamond-content">Is the market going down?</div>
+        <div class="decision-buttons">
+          <button class="btn btn-yes" onclick="answer('thursdayMarketCheckNoPos', 'down')">Down</button>
+          <button class="btn btn-no" onclick="answer('thursdayMarketCheckNoPos', 'up')">Up/Uncertain</button>
+        </div>
+      </div>
+
+      <!-- Thursday - No Position & Market Down: Buy -->
+      <div class="result buy hidden" id="thursdayNoPosMarketDown">
+        💰 CONSIDER TO BUY
+        <div style="font-size: 1rem; margin-top: 10px; font-weight: 400;">
+          No positions and market is down - Start with $10k and keep buying
+        </div>
+      </div>
+
+      <!-- Thursday - No Position & Market Up/Uncertain: Wait -->
+      <div class="time-input hidden" id="thursdayNoPosWaitTime">
+        <label for="thursdayNoPosTime" style="font-weight: 600; color: #92400e; margin-bottom: 15px; display: block;">
+          What time is it now?
+        </label>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+          <input type="time" id="thursdayNoPosTime"/>
+          <button class="btn btn-yes" onclick="checkThursdayNoPosTime()">Check</button>
+        </div>
+        <div id="thursday-nopos-time-error" class="error hidden">Please select the current time</div>
+      </div>
+
+      <!-- Thursday - No Position, Market Up/Uncertain, Before 9:30: Wait -->
+      <div class="result wait hidden" id="thursdayNoPosWaitEarly">
+        ⏳ WAIT AND SEE
+        <div style="font-size: 1rem; margin-top: 10px; font-weight: 400;">
+          Market uncertain and before 9:30 AM - Wait until 9:30 AM
+        </div>
+      </div>
+
+      <!-- Thursday - No Position, Market Up/Uncertain, After 9:30: Wait and See -->
+      <div class="result wait hidden" id="thursdayNoPosWaitAndSee">
+        ⏳ WAIT AND SEE
+        <div style="font-size: 1rem; margin-top: 10px; font-weight: 400;">
+          Market uncertain - Wait and see if you're not certain
         </div>
       </div>
 
@@ -680,10 +720,10 @@
         </div>
       </div>
 
-      <!-- Profit Question (Only for Mon/Wed) -->
+      <!-- Profit Question (Moved to center, positioned after Thursday flows) -->
       <div class="arrow hidden" id="arrow3">↓</div>
       
-      <div class="diamond hidden" id="profitCheck">
+      <div class="diamond hidden" id="profitCheck" style="margin: 40px auto;">
         <div class="diamond-content">Did you make money today?</div>
         <div class="decision-buttons">
           <button class="btn btn-yes" onclick="answer('profitCheck', 'yes')">Yes</button>
@@ -847,6 +887,7 @@
         if (response === 'up') {
           showElement('tuesdaySell');
           stepHistory.push('tuesdaySell');
+          showProfitCheckAfterDelay();
         } else {
           showElement('tuesdayPositionCheck');
           stepHistory.push('tuesdayPositionCheck');
@@ -858,6 +899,7 @@
         if (response === 'yes') {
           showElement('tuesdayBuy');
           stepHistory.push('tuesdayBuy');
+          showProfitCheckAfterDelay();
         } else {
           showElement('tuesdayTimeCheck');
           stepHistory.push('tuesdayTimeCheck');
@@ -866,20 +908,41 @@
         }
       }
       else if (questionId === 'thursdayPositionCheck') {
-        showElement('thursdayLayout');
         if (response === 'yes') {
-          setTimeout(() => {
-            showElement('thursdayLeftBranch');
-          }, 300);
+          showElement('thursdayMarketCheckWithPos');
+          stepHistory.push('thursdayMarketCheckWithPos');
+          currentStep = 3;
+          updateBackButton();
         } else {
-          setTimeout(() => {
-            showElement('thursdayRightBranch');
-          }, 300);
+          showElement('thursdayMarketCheckNoPos');
+          stepHistory.push('thursdayMarketCheckNoPos');
+          currentStep = 3;
+          updateBackButton();
         }
-        setTimeout(() => {
-          showElement('thursdayWaitCenter');
-        }, 600);
-        stepHistory.push('thursdayLayout');
+      }
+      else if (questionId === 'thursdayMarketCheckWithPos') {
+        if (response === 'up') {
+          showElement('thursdayHasPosMarketUp');
+          stepHistory.push('thursdayHasPosMarketUp');
+          showProfitCheckAfterDelay();
+        } else {
+          showElement('thursdayHasPosMarketDownTime');
+          stepHistory.push('thursdayHasPosMarketDownTime');
+          currentStep = 4;
+          updateBackButton();
+        }
+      }
+      else if (questionId === 'thursdayMarketCheckNoPos') {
+        if (response === 'down') {
+          showElement('thursdayNoPosMarketDown');
+          stepHistory.push('thursdayNoPosMarketDown');
+          showProfitCheckAfterDelay();
+        } else {
+          showElement('thursdayNoPosWaitTime');
+          stepHistory.push('thursdayNoPosWaitTime');
+          currentStep = 4;
+          updateBackButton();
+        }
       }
     }
 
@@ -960,11 +1023,80 @@
       setTimeout(() => {
         if (currentTime < 9.5) { // Before 9:30 AM
           showElement('tuesdayWaitEarly');
+          stepHistory.push('tuesdayWaitEarly');
         } else {
           showElement('tuesdayBuyAfter930');
+          stepHistory.push('tuesdayBuyAfter930');
+          showProfitCheckAfterDelay();
         }
-        stepHistory.push('tuesdayTimeResult');
       }, 400);
+    }
+
+    function checkThursdayHasPosTime() {
+      const timeInput = document.getElementById('thursdayHasPosTime');
+      const time = timeInput.value;
+      const errorDiv = document.getElementById('thursday-haspos-time-error');
+
+      if (!time) {
+        errorDiv.classList.remove('hidden');
+        timeInput.focus();
+        return;
+      }
+
+      errorDiv.classList.add('hidden');
+
+      const [hours, minutes] = time.split(':').map(Number);
+      const currentTime = hours + (minutes / 60);
+
+      setTimeout(() => {
+        if (currentTime < 9.5) { // Before 9:30 AM
+          showElement('thursdayHasPosWaitEarly');
+          stepHistory.push('thursdayHasPosWaitEarly');
+        } else {
+          showElement('thursdayHasPosBuyAfter930');
+          stepHistory.push('thursdayHasPosBuyAfter930');
+          showProfitCheckAfterDelay();
+        }
+      }, 400);
+    }
+
+    function checkThursdayNoPosTime() {
+      const timeInput = document.getElementById('thursdayNoPosTime');
+      const time = timeInput.value;
+      const errorDiv = document.getElementById('thursday-nopos-time-error');
+
+      if (!time) {
+        errorDiv.classList.remove('hidden');
+        timeInput.focus();
+        return;
+      }
+
+      errorDiv.classList.add('hidden');
+
+      const [hours, minutes] = time.split(':').map(Number);
+      const currentTime = hours + (minutes / 60);
+
+      setTimeout(() => {
+        if (currentTime < 9.5) { // Before 9:30 AM
+          showElement('thursdayNoPosWaitEarly');
+          stepHistory.push('thursdayNoPosWaitEarly');
+        } else {
+          showElement('thursdayNoPosWaitAndSee');
+          stepHistory.push('thursdayNoPosWaitAndSee');
+        }
+      }, 400);
+    }
+
+    function showProfitCheckAfterDelay() {
+      setTimeout(() => {
+        showElement('arrow3');
+        setTimeout(() => {
+          showElement('profitCheck');
+          stepHistory.push('profitCheck');
+          currentStep = 5;
+          updateBackButton();
+        }, 500);
+      }, 800);
     }
 
     function showElement(elementId) {
@@ -1030,13 +1162,62 @@
           return;
         }
       } else if (selectedDay === 'Thursday') {
-        if (currentStep === 2) {
+        if (currentStep === 5) {
+          // From profit check back to previous step
+          hideElement('profitCheck');
+          hideElement('arrow3');
+          hideElement('amountInput');
+          hideElement('arrow4');
+          hideElement('arrow5');
+          hideElement('amountCheck');
+          hideElement('over5kFlow');
+          hideElement('under5kFlow');
+          hideElement('stopTrading');
+          hideElement('continueTrading');
+          hideElement('limitTrade');
+          currentStep = 4;
+          
+        } else if (currentStep === 4) {
+          // From time check back to market check
+          hideElement('thursdayHasPosMarketDownTime');
+          hideElement('thursdayHasPosWaitEarly');
+          hideElement('thursdayHasPosBuyAfter930');
+          hideElement('thursdayNoPosWaitTime');
+          hideElement('thursdayNoPosWaitEarly');
+          hideElement('thursdayNoPosWaitAndSee');
+          document.getElementById('thursdayHasPosTime').value = '';
+          document.getElementById('thursdayNoPosTime').value = '';
+          document.getElementById('thursday-haspos-time-error').classList.add('hidden');
+          document.getElementById('thursday-nopos-time-error').classList.add('hidden');
+          
+          // Show appropriate market check buttons again
+          const hasPosButtons = document.querySelector('#thursdayMarketCheckWithPos .decision-buttons');
+          const noPosButtons = document.querySelector('#thursdayMarketCheckNoPos .decision-buttons');
+          if (hasPosButtons) hasPosButtons.style.display = 'flex';
+          if (noPosButtons) noPosButtons.style.display = 'flex';
+          currentStep = 3;
+          
+        } else if (currentStep === 3) {
+          // From market check back to position check
+          hideElement('thursdayMarketCheckWithPos');
+          hideElement('thursdayMarketCheckNoPos');
+          hideElement('thursdayHasPosMarketUp');
+          hideElement('thursdayNoPosMarketDown');
+          hideElement('thursdayHasPosMarketDownTime');
+          hideElement('thursdayNoPosWaitTime');
+          
+          // Show position check buttons again
+          const buttons = document.querySelector('#thursdayPositionCheck .decision-buttons');
+          if (buttons) buttons.style.display = 'flex';
+          currentStep = 2;
+          
+        } else if (currentStep === 2) {
           // Back to start
           resetFlowchart();
           return;
         }
       } else {
-        // Handle other days
+        // Handle other days (Monday, Wednesday, Friday)
         if (currentStep === 4) {
           // From time check back to amount input
           hideElement('under5kFlow');
@@ -1084,9 +1265,13 @@
       document.getElementById('profitAmount').value = '';
       document.getElementById('currentTime').value = '';
       document.getElementById('tuesdayTime').value = '';
+      document.getElementById('thursdayHasPosTime').value = '';
+      document.getElementById('thursdayNoPosTime').value = '';
       document.getElementById('profit-error').classList.add('hidden');
       document.getElementById('time-error').classList.add('hidden');
       document.getElementById('tuesday-time-error').classList.add('hidden');
+      document.getElementById('thursday-haspos-time-error').classList.add('hidden');
+      document.getElementById('thursday-nopos-time-error').classList.add('hidden');
       
       // Reset decision buttons
       const allButtons = document.querySelectorAll('.decision-buttons');
@@ -1127,6 +1312,10 @@
           checkTime();
         } else if (document.activeElement.id === 'tuesdayTime') {
           checkTuesdayTime();
+        } else if (document.activeElement.id === 'thursdayHasPosTime') {
+          checkThursdayHasPosTime();
+        } else if (document.activeElement.id === 'thursdayNoPosTime') {
+          checkThursdayNoPosTime();
         }
       } else if (e.key === 'Escape') {
         if (currentStep > 1) {
