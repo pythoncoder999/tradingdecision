@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Limit Your Trade, Max Your Profit</title>
+  <style>
+    /* Keep your original CSS styles here – omitted for brevity */
+    /* ... Copy your full existing CSS between <style> ... </style> */
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button class="back-btn hidden" onclick="goBack()" id="backBtn">← Back</button>
+    <h1>🎯 Limit your Trade Max your Profit</h1>
+    <div class="subtitle">DISCIPLINE</div>
+
+    <!-- Day Selector -->
+    <div class="day-selector">
+      <button class="day-btn" onclick="setDay('Monday')">Monday</button>
+      <button class="day-btn" onclick="setDay('Tuesday')">Tuesday</button>
+      <button class="day-btn" onclick="setDay('Wednesday')">Wednesday</button>
+      <button class="day-btn" onclick="setDay('Thursday')">Thursday</button>
+      <button class="day-btn" onclick="setDay('Friday')">Friday</button>
+    </div>
+
+    <div class="current-day" id="currentDay">Select a Day to Start</div>
+
+    <div class="flowchart" id="flowchart">
+      <!-- Start -->
+      <div class="node start" id="start">📈 Ready to Trade</div>
+      <div class="arrow hidden" id="arrow1">↓</div>
+
+      <!-- Day Check -->
+      <div class="diamond hidden active" id="dayCheck">
+        <div class="diamond-content">Check Trading Day</div>
+      </div>
+
+      <div class="arrow hidden" id="arrow2">↓</div>
+
+      <!-- Action -->
+      <div class="result sell hidden" id="sellAction">
+        📤 CONSIDER TO SELL<br/><span style="font-weight: 400;">Sell 10k every time stock goes up 1%</span>
+      </div>
+
+      <div class="result buy hidden" id="buyAction">
+        💰 CONSIDER TO BUY<br/><span style="font-weight: 400;">Buy for $10k only</span>
+      </div>
+
+      <div class="result wait hidden" id="waitAction">
+        ⏳ WAIT - NO POSITION<br/><span style="font-weight: 400;">If you have no stock, consider waiting</span>
+      </div>
+
+      <!-- Profit Question -->
+      <div class="arrow hidden" id="arrow3">↓</div>
+      <div class="diamond hidden" id="profitCheck">
+        <div class="diamond-content">Did you make money today?</div>
+        <div class="decision-buttons">
+          <button class="btn btn-yes" onclick="answer('profitCheck', 'yes')">Yes</button>
+          <button class="btn btn-no" onclick="answer('profitCheck', 'no')">No</button>
+        </div>
+      </div>
+
+      <!-- Amount Input -->
+      <div class="arrow hidden" id="arrow4">↓</div>
+      <div class="input-group hidden" id="amountInput">
+        <div style="margin-bottom: 15px; font-weight: 600;">How much did you make?</div>
+        <input type="number" id="profitAmount" placeholder="Enter amount"/>
+        <button class="btn btn-yes" onclick="checkAmount()" style="margin-left: 10px;">Submit</button>
+      </div>
+
+      <!-- Over/Under 5k Check -->
+      <div class="arrow hidden" id="arrow5">↓</div>
+      <div class="diamond hidden" id="amountCheck">
+        <div class="diamond-content">Over $5,000?</div>
+      </div>
+
+      <div class="horizontal-flow hidden" id="under5kFlow">
+        <div class="arrow-horizontal">→</div>
+        <div class="input-group">
+          <div style="margin-bottom: 15px; font-weight: 600;">What time is it?</div>
+          <input type="time" id="currentTime" />
+          <button class="btn btn-yes" onclick="checkTime()" style="margin-left: 10px;">Check</button>
+        </div>
+      </div>
+
+      <div class="horizontal-flow hidden" id="over5kFlow">
+        <div class="arrow-horizontal">→</div>
+        <div class="result enjoy">
+          🎉 STOP TRADING & ENJOY LIVING!<br/><span style="font-weight: 400;">You've made good profit today!</span>
+        </div>
+      </div>
+
+      <div class="result stop hidden" id="stopTrading">
+        🛑 STOP TRADING<br/><span style="font-weight: 400;">It's 2PM or later - Stop trading</span>
+      </div>
+
+      <div class="result sell hidden" id="limitTrade">
+        ⚠️ LIMIT YOUR TRADE<br/><span style="font-weight: 400;">Consider reducing trading</span>
+      </div>
+    </div>
+
+    <button class="reset-btn" onclick="resetFlowchart()">🔄 Start Over</button>
+  </div>
+
+  <script>
+    let currentStep = 0;
+    let selectedDay = '';
+
+    function setDay(day) {
+      selectedDay = day;
+      document.getElementById('currentDay').textContent = `TODAY IS ${day.toUpperCase()}`;
+      document.querySelectorAll('.day-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      showElement('arrow1');
+      setTimeout(() => {
+        showElement('dayCheck');
+        processDay();
+      }, 500);
+    }
+
+    function processDay() {
+      setTimeout(() => {
+        showElement('arrow2');
+        if (selectedDay === 'Monday' || selectedDay === 'Wednesday') {
+          showElement('sellAction');
+          setTimeout(() => {
+            showElement('arrow3');
+            showElement('profitCheck');
+            currentStep = 1;
+            updateBackButton();
+          }, 500);
+        } else if (selectedDay === 'Tuesday' || selectedDay === 'Thursday') {
+          showElement('buyAction');
+        } else if (selectedDay === 'Friday') {
+          showElement('waitAction');
+        }
+      }, 500);
+    }
+
+    function answer(id, response) {
+      const buttons = document.querySelector(`#${id} .decision-buttons`);
+      if (buttons) buttons.style.display = 'none';
+
+      if (id === 'profitCheck') {
+        if (response === 'yes') {
+          showElement('arrow4');
+          setTimeout(() => {
+            showElement('amountInput');
+            currentStep = 2;
+            updateBackButton();
+          }, 500);
+        } else {
+          showElement('limitTrade');
+        }
+      }
+    }
+
+    function checkAmount() {
+      const amount = parseFloat(document.getElementById('profitAmount').value);
+      if (isNaN(amount)) return alert('Enter valid profit amount');
+
+      showElement('arrow5');
+      setTimeout(() => {
+        showElement('amountCheck');
+        setTimeout(() => {
+          if (amount >= 5000) {
+            showElement('over5kFlow');
+          } else {
+            showElement('under5kFlow');
+            currentStep = 3;
+            updateBackButton();
+          }
+        }, 500);
+      }, 300);
+    }
+
+    function checkTime() {
+      const time = document.getElementById('currentTime').value;
+      if (!time) return alert('Enter time');
+      const hour = parseInt(time.split(':')[0]);
+      if (hour >= 14) {
+        showElement('stopTrading');
+      } else {
+        showElement('limitTrade');
+      }
+    }
+
+    function showElement(id) {
+      const el = document.getElementById(id);
+      el.classList.remove('hidden');
+      el.classList.add('visible');
+    }
+
+    function hideElement(id) {
+      const el = document.getElementById(id);
+      el.classList.add('hidden');
+      el.classList.remove('visible');
+    }
+
+    function updateBackButton() {
+      document.getElementById('backBtn').classList.toggle('hidden', currentStep === 0);
+    }
+
+    function goBack() {
+      if (currentStep === 3) {
+        hideElement('under5kFlow');
+        hideElement('stopTrading');
+        hideElement('limitTrade');
+        currentStep = 2;
+      } else if
