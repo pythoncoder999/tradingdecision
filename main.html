@@ -5,28 +5,305 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Limit Your Trade, Max Your Profit</title>
   <style>
-    /* Keep your original CSS styles here – omitted for brevity */
-    /* ... Copy your full existing CSS between <style> ... </style> */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: #f4f7fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      width: 100%;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #1a1a1a;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      color: #555;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+
+    .day-selector {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .day-btn {
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      background: #e0e7ff;
+      color: #1a1a1a;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .day-btn:hover {
+      background: #c7d2fe;
+      transform: translateY(-2px);
+    }
+
+    .day-btn.active {
+      background: #4f46e5;
+      color: #fff;
+    }
+
+    .day-btn:focus {
+      outline: 2px solid #4f46e5;
+      outline-offset: 2px;
+    }
+
+    .current-day {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 30px;
+    }
+
+    .flowchart {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .node, .diamond, .result, .input-group {
+      padding: 15px 25px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      transition: opacity 0.5s, transform 0.5s;
+    }
+
+    .node {
+      background: #10b981;
+      color: #fff;
+    }
+
+    .diamond {
+      background: #fef3c7;
+      color: #1a1a1a;
+      position: relative;
+      transform: rotate(45deg);
+      width: 180px;
+      height: 180px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .diamond-content {
+      transform: rotate(-45deg);
+      font-size: 0.9rem;
+      padding: 10px;
+    }
+
+    .decision-buttons {
+      position: absolute;
+      bottom: -60px;
+      display: flex;
+      gap: 10px;
+      transform: rotate(-45deg);
+    }
+
+    .result {
+      background: #e5e7eb;
+      color: #1a1a1a;
+    }
+
+    .result.buy {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .result.sell {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .result.enjoy {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .result.stop {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .input-group {
+      background: #f3f4f6;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    .input-group input {
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      margin-right: 10px;
+      font-size: 1rem;
+    }
+
+    .input-group input:focus {
+      outline: 2px solid #4f46e5;
+      border-color: transparent;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.3s;
+    }
+
+    .btn-yes {
+      background: #4f46e5;
+      color: #fff;
+    }
+
+    .btn-yes:hover {
+      background: #4338ca;
+    }
+
+    .btn-no {
+      background: #6b7280;
+      color: #fff;
+    }
+
+    .btn-no:hover {
+      background: #4b5563;
+    }
+
+    .arrow, .arrow-horizontal {
+      font-size: 1.5rem;
+      color: #4b5563;
+      margin: 10px 0;
+    }
+
+    .arrow-horizontal {
+      transform: rotate(90deg);
+    }
+
+    .horizontal-flow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hidden {
+      opacity: 0;
+      transform: translateY(20px);
+      pointer-events: none;
+    }
+
+    .visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .back-btn, .reset-btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin: 20px;
+      transition: background 0.3s;
+    }
+
+    .back-btn {
+      background: #6b7280;
+      color: #fff;
+    }
+
+    .back-btn:hover {
+      background: #4b5563;
+    }
+
+    .reset-btn {
+      background: #4f46e5;
+      color: #fff;
+    }
+
+    .reset-btn:hover {
+      background: #4338ca;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 15px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .day-btn {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+      }
+
+      .diamond {
+        width: 140px;
+        height: 140px;
+      }
+
+      .diamond-content {
+        font-size: 0.8rem;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <button class="back-btn hidden" onclick="goBack()" id="backBtn">← Back</button>
-    <h1>🎯 Limit your Trade Max your Profit</h1>
-    <div class="subtitle">DISCIPLINE</div>
+    <button class="back-btn hidden" onclick="goBack()" id="backBtn" aria-label="Go back to previous step">← Back</button>
+    <h1>🎯 Limit Your Trade, Max Your Profit</h1>
+    <div class="subtitle">Master Discipline in Trading</div>
 
     <!-- Day Selector -->
-    <div class="day-selector">
-      <button class="day-btn" onclick="setDay('Monday')">Monday</button>
-      <button class="day-btn" onclick="setDay('Tuesday')">Tuesday</button>
-      <button class="day-btn" onclick="setDay('Wednesday')">Wednesday</button>
-      <button class="day-btn" onclick="setDay('Thursday')">Thursday</button>
-      <button class="day-btn" onclick="setDay('Friday')">Friday</button>
+    <div class="day-selector" role="tablist">
+      <button class="day-btn" onclick="setDay('Monday')" role="tab">Monday</button>
+      <button class="day-btn" onclick="setDay('Tuesday')" role="tab">Tuesday</button>
+      <button class="day-btn" onclick="setDay('Wednesday')" role="tab">Wednesday</button>
+      <button class="day-btn" onclick="setDay('Thursday')" role="tab">Thursday</button>
+      <button class="day-btn" onclick="setDay('Friday')" role="tab">Friday</button>
     </div>
 
-    <div class="current-day" id="currentDay">Select a Day to Start</div>
+    <div class="current-day" id="currentDay" aria-live="polite">Select a Day to Start</div>
 
-    <div class="flowchart" id="flowchart">
+    <div class="flowchart" role="region" aria-label="Trading Flowchart">
       <!-- Start -->
       <div class="node start" id="start">📈 Ready to Trade</div>
       <div class="arrow hidden" id="arrow1">↓</div>
@@ -40,7 +317,7 @@
 
       <!-- Action -->
       <div class="result sell hidden" id="sellAction">
-        📤 CONSIDER TO SELL<br/><span style="font-weight: 400;">Sell 10k every time stock goes up 1%</span>
+        📤 CONSIDER TO SELL<br/><span style="font-weight: 400;">Sell $10k every time stock goes up 1%</span>
       </div>
 
       <div class="result buy hidden" id="buyAction">
@@ -56,17 +333,20 @@
       <div class="diamond hidden" id="profitCheck">
         <div class="diamond-content">Did you make money today?</div>
         <div class="decision-buttons">
-          <button class="btn btn-yes" onclick="answer('profitCheck', 'yes')">Yes</button>
-          <button class="btn btn-no" onclick="answer('profitCheck', 'no')">No</button>
+          <button class="btn btn-yes" onclick="answer('profitCheck', 'yes')" aria-label="Yes, I made money">Yes</button>
+          <button class="btn btn-no" onclick="answer('profitCheck', 'no')" aria-label="No, I did not make money">No</button>
         </div>
       </div>
 
       <!-- Amount Input -->
       <div class="arrow hidden" id="arrow4">↓</div>
       <div class="input-group hidden" id="amountInput">
-        <div style="margin-bottom: 15px; font-weight: 600;">How much did you make?</div>
-        <input type="number" id="profitAmount" placeholder="Enter amount"/>
-        <button class="btn btn-yes" onclick="checkAmount()" style="margin-left: 10px;">Submit</button>
+        <label for="profitAmount" style="margin-bottom: 15px; font-weight: 600;">How much did you make?</label>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <input type="number" id="profitAmount" placeholder="Enter amount in USD" min="0" aria-describedby="profit-error"/>
+          <button class="btn btn-yes" onclick="checkAmount()">Submit</button>
+        </div>
+        <div id="profit-error" class="error hidden" role="alert">Please enter a valid profit amount.</div>
       </div>
 
       <!-- Over/Under 5k Check -->
@@ -75,19 +355,22 @@
         <div class="diamond-content">Over $5,000?</div>
       </div>
 
-      <div class="horizontal-flow hidden" id="under5kFlow">
-        <div class="arrow-horizontal">→</div>
-        <div class="input-group">
-          <div style="margin-bottom: 15px; font-weight: 600;">What time is it?</div>
-          <input type="time" id="currentTime" />
-          <button class="btn btn-yes" onclick="checkTime()" style="margin-left: 10px;">Check</button>
-        </div>
-      </div>
-
       <div class="horizontal-flow hidden" id="over5kFlow">
         <div class="arrow-horizontal">→</div>
         <div class="result enjoy">
           🎉 STOP TRADING & ENJOY LIVING!<br/><span style="font-weight: 400;">You've made good profit today!</span>
+        </div>
+      </div>
+
+      <div class="horizontal-flow hidden" id="under5kFlow">
+        <div class="arrow-horizontal">→</div>
+        <div class="input-group">
+          <label for="currentTime" style="margin-bottom: 15px; font-weight: 600;">What time is it?</label>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <input type="time" id="currentTime" aria-describedby="time-error"/>
+            <button class="btn btn-yes" onclick="checkTime()">Check</button>
+          </div>
+          <div id="time-error" class="error hidden" role="alert">Please enter a valid time.</div>
         </div>
       </div>
 
@@ -100,12 +383,13 @@
       </div>
     </div>
 
-    <button class="reset-btn" onclick="resetFlowchart()">🔄 Start Over</button>
+    <button class="reset-btn" onclick="resetFlowchart()" aria-label="Reset the flowchart">🔄 Start Over</button>
   </div>
 
   <script>
     let currentStep = 0;
     let selectedDay = '';
+    let history = [];
 
     function setDay(day) {
       selectedDay = day;
@@ -113,6 +397,7 @@
       document.querySelectorAll('.day-btn').forEach(btn => btn.classList.remove('active'));
       event.target.classList.add('active');
 
+      history = ['start'];
       showElement('arrow1');
       setTimeout(() => {
         showElement('dayCheck');
@@ -121,20 +406,25 @@
     }
 
     function processDay() {
+      history.push('dayCheck', 'arrow1', 'arrow2');
+      showElement('arrow2');
       setTimeout(() => {
-        showElement('arrow2');
         if (selectedDay === 'Monday' || selectedDay === 'Wednesday') {
           showElement('sellAction');
+          history.push('sellAction');
           setTimeout(() => {
             showElement('arrow3');
             showElement('profitCheck');
+            history.push('arrow3', 'profitCheck');
             currentStep = 1;
             updateBackButton();
           }, 500);
         } else if (selectedDay === 'Tuesday' || selectedDay === 'Thursday') {
           showElement('buyAction');
+          history.push('buyAction');
         } else if (selectedDay === 'Friday') {
           showElement('waitAction');
+          history.push('waitAction');
         }
       }, 500);
     }
@@ -144,31 +434,44 @@
       if (buttons) buttons.style.display = 'none';
 
       if (id === 'profitCheck') {
+        history.push('profitCheck-response');
         if (response === 'yes') {
           showElement('arrow4');
           setTimeout(() => {
             showElement('amountInput');
+            history.push('arrow4', 'amountInput');
             currentStep = 2;
             updateBackButton();
           }, 500);
         } else {
           showElement('limitTrade');
+          history.push('limitTrade');
         }
       }
     }
 
     function checkAmount() {
-      const amount = parseFloat(document.getElementById('profitAmount').value);
-      if (isNaN(amount)) return alert('Enter valid profit amount');
+      const amountInput = document.getElementById('profitAmount');
+      const amount = parseFloat(amountInput.value);
+      const error = document.getElementById('profit-error');
+      if (isNaN(amount) || amount < 0) {
+        error.classList.remove('hidden');
+        return;
+      }
+      error.classList.add('hidden');
 
+      history.push('amountInput-value');
       showElement('arrow5');
       setTimeout(() => {
         showElement('amountCheck');
+        history.push('arrow5', 'amountCheck');
         setTimeout(() => {
           if (amount >= 5000) {
             showElement('over5kFlow');
+            history.push('over5kFlow');
           } else {
             showElement('under5kFlow');
+            history.push('under5kFlow');
             currentStep = 3;
             updateBackButton();
           }
@@ -177,26 +480,40 @@
     }
 
     function checkTime() {
-      const time = document.getElementById('currentTime').value;
-      if (!time) return alert('Enter time');
+      const timeInput = document.getElementById('currentTime');
+      const time = timeInput.value;
+      const error = document.getElementById('time-error');
+      if (!time) {
+        error.classList.remove('hidden');
+        return;
+      }
+      error.classList.add('hidden');
+
+      history.push('under5kFlow-time');
       const hour = parseInt(time.split(':')[0]);
       if (hour >= 14) {
         showElement('stopTrading');
+        history.push('stopTrading');
       } else {
         showElement('limitTrade');
+        history.push('limitTrade');
       }
     }
 
     function showElement(id) {
       const el = document.getElementById(id);
-      el.classList.remove('hidden');
-      el.classList.add('visible');
+      if (el) {
+        el.classList.remove('hidden');
+        el.classList.add('visible');
+      }
     }
 
     function hideElement(id) {
       const el = document.getElementById(id);
-      el.classList.add('hidden');
-      el.classList.remove('visible');
+      if (el) {
+        el.classList.add('hidden');
+        el.classList.remove('visible');
+      }
     }
 
     function updateBackButton() {
@@ -204,9 +521,66 @@
     }
 
     function goBack() {
+      if (currentStep === 0) return;
+
+      const lastStep = history.pop();
       if (currentStep === 3) {
         hideElement('under5kFlow');
         hideElement('stopTrading');
-        hideElement('limitTrade');
+        hideElement('limitTrading');
+        document.getElementById('currentTime').value = '';
+        document.getElementById('time-error').classList.add('hidden');
         currentStep = 2;
-      } else if
+      } else if (currentStep === 2) {
+        hideElement('amountInput');
+        hideElement('arrow4');
+        hideElement('amountCheck');
+        hideElement('arrow5');
+        hideElement('over5kFlow');
+        hideElement('under5kFlow');
+        document.getElementById('profitAmount').value = '';
+        document.getElementById('profit-error').classList.add('hidden');
+        document.querySelector('#profitCheck .decision-buttons').style.display = 'flex';
+        currentStep = 1;
+      } else if (currentStep === 1) {
+        hideElement('profitCheck');
+        hideElement('arrow3');
+        hideElement('sellAction');
+        hideElement('buyAction');
+        hideElement('waitAction');
+        hideElement('limitTrade');
+        hideElement('arrow2');
+        currentStep = 0;
+      }
+      updateBackButton();
+    }
+
+    function resetFlowchart() {
+      currentStep = 0;
+      selectedDay = '';
+      history = [];
+      document.getElementById('currentDay').textContent = 'Select a Day to Start';
+      document.querySelectorAll('.day-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.hidden, .visible').forEach(el => {
+        el.classList.add('hidden');
+        el.classList.remove('visible');
+      });
+      document.getElementById('start').classList.remove('hidden');
+      document.getElementById('start').classList.add('visible');
+      document.getElementById('profitAmount').value = '';
+      document.getElementById('currentTime').value = '';
+      document.getElementById('profit-error').classList.add('hidden');
+      document.getElementById('time-error').classList.add('hidden');
+      document.querySelector('#profitCheck .decision-buttons').style.display = 'flex';
+      updateBackButton();
+    }
+
+    // Keyboard accessibility
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && document.activeElement.classList.contains('btn')) {
+        document.activeElement.click();
+      }
+    });
+  </script>
+</body>
+</html>
